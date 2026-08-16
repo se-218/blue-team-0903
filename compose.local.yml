@@ -1,0 +1,38 @@
+# 本地 build + 測試用。
+#
+# ⚠️ 正式部署由環境端照 Metis 的 deploy/compose.seat.yml 覆寫，且必須遵守：
+#    不得 port mapping、不要釘網段、容器名 blue-a-${LAB_ID} / blue-b-${LAB_ID}。
+#    這份為了本地測方便才開了 web port —— 別把它當正式環境。
+#
+# 用法：
+#   docker compose -f compose.local.yml -p labtest up -d --build
+#   docker exec blue-a-local ssh admin@target-internal   # 密碼 InternalAdm1n!23
+#   docker compose -f compose.local.yml -p labtest down
+
+services:
+  blue-a:                       # = target-box（對外，關卡 1–7）
+    build: ./target-box
+    container_name: blue-a-${LAB_ID:-local}
+    cap_add:
+      - NET_ADMIN               # 關卡 6 的 iptables 修補要用
+    networks:
+      - target-net
+      - internal-net
+    ports:
+      - "${WEB_PORT:-18080}:80" # 僅本地測試；正式環境不得 port mapping
+    cpus: 0.5
+    mem_limit: 512m
+    restart: unless-stopped
+
+  blue-b:                       # = target-internal（對內，橫向移動目標）
+    build: ./target-internal
+    container_name: blue-b-${LAB_ID:-local}
+    networks:
+      internal-net:
+        aliases:
+          - target-internal     # ← 讓 blue-a 的 ssh admin@target-internal 解析得到
+    restart: unless-stopped
+
+networks:
+  target-net:                   # 對外：紅隊唯一打得到的網段
+  internal-net:                 # 對內：只有 blue-a / blue-b，紅隊連不到

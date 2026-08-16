@@ -1,0 +1,2296 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
+
+<title>網路選課｜Campus Portal</title>
+
+<style>
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family:
+        "Noto Sans TC",
+        "Microsoft JhengHei",
+        Arial,
+        sans-serif;
+
+    background: #f5f3ee;
+    color: #333;
+}
+
+
+/* =========================
+   HEADER
+========================= */
+
+.top {
+    background: #d9ae45;
+    color: white;
+    padding: 20px 25px;
+}
+
+.top-inner {
+    max-width: 1100px;
+    margin: auto;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.logo {
+    width: 58px;
+    height: 58px;
+
+    border: 2px solid white;
+    border-radius: 50%;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    font-weight: bold;
+    font-size: 20px;
+}
+
+.brand-title {
+    font-size: 25px;
+    font-weight: bold;
+}
+
+.brand-subtitle {
+    font-size: 12px;
+    margin-top: 3px;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.header-user {
+    font-size: 13px;
+}
+
+.logout {
+    background: transparent;
+    border: 1px solid white;
+    color: white;
+
+    padding: 7px 12px;
+
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+
+/* =========================
+   NAV
+========================= */
+
+.nav {
+    background: white;
+    border-bottom: 1px solid #ddd;
+}
+
+.nav-inner {
+    max-width: 1100px;
+    margin: auto;
+
+    display: flex;
+    justify-content: center;
+}
+
+.nav a {
+    padding: 17px 25px;
+
+    text-decoration: none;
+    color: #333;
+}
+
+.nav a:hover,
+.nav a.active {
+    background: #f3ead3;
+    color: #9b761f;
+    font-weight: bold;
+}
+
+
+/* =========================
+   MAIN
+========================= */
+
+.container {
+    width: min(1000px, 92%);
+    margin: auto;
+
+    padding-bottom: 50px;
+}
+
+.title {
+    text-align: center;
+
+    color: #594b2d;
+
+    font-size: 24px;
+
+    margin: 35px 0 25px;
+}
+
+.title::after {
+    content: "";
+
+    display: block;
+
+    width: 45px;
+    height: 3px;
+
+    background: #d9ae45;
+
+    margin: 10px auto;
+}
+
+
+/* =========================
+   SUMMARY
+========================= */
+
+.summary-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, 1fr);
+
+    gap: 15px;
+
+    margin-bottom: 20px;
+}
+
+.summary-card {
+    background: white;
+
+    border: 1px solid #e5e0d5;
+
+    border-radius: 8px;
+
+    padding: 18px;
+
+    text-align: center;
+}
+
+.summary-number {
+    font-size: 26px;
+
+    font-weight: bold;
+
+    color: #9b761f;
+}
+
+.summary-label {
+    margin-top: 5px;
+
+    font-size: 12px;
+
+    color: #888;
+}
+
+
+/* =========================
+   CARD
+========================= */
+
+.card {
+    background: white;
+
+    border: 1px solid #e5e0d5;
+
+    border-radius: 8px;
+
+    padding: 22px;
+
+    margin-bottom: 20px;
+}
+
+.card-title {
+    color: #594b2d;
+
+    font-size: 19px;
+
+    margin-bottom: 18px;
+}
+
+
+/* =========================
+   FILTER
+========================= */
+
+.filter-area {
+    background: #faf8f2;
+
+    border: 1px solid #e8e0ce;
+
+    border-radius: 7px;
+
+    padding: 18px;
+
+    margin-bottom: 20px;
+}
+
+.filter-grid {
+    display: grid;
+
+    grid-template-columns:
+        2fr 1fr 1fr 1fr auto;
+
+    gap: 10px;
+
+    align-items: end;
+}
+
+.filter-group {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 6px;
+}
+
+.filter-label {
+    font-size: 11px;
+
+    color: #776b52;
+}
+
+.filter-input,
+.filter-select {
+    width: 100%;
+
+    height: 40px;
+
+    border: 1px solid #ddd5c5;
+
+    border-radius: 5px;
+
+    background: white;
+
+    padding: 0 11px;
+
+    outline: none;
+
+    font-family: inherit;
+
+    font-size: 12px;
+}
+
+.filter-input:focus,
+.filter-select:focus {
+    border-color: #b58d32;
+
+    box-shadow:
+        0 0 0 3px rgba(181,141,50,.10);
+}
+
+.clear-button {
+    height: 40px;
+
+    border: 1px solid #cdbb94;
+
+    background: white;
+
+    color: #80672e;
+
+    padding: 0 14px;
+
+    border-radius: 5px;
+
+    cursor: pointer;
+}
+
+.clear-button:hover {
+    background: #f5ecd7;
+}
+
+
+/* =========================
+   TOOLBAR
+========================= */
+
+.course-toolbar {
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    margin-bottom: 15px;
+}
+
+.course-result {
+    color: #777;
+
+    font-size: 12px;
+}
+
+.demo-note {
+    color: #a17d29;
+
+    font-size: 11px;
+}
+
+
+/* =========================
+   COURSE LIST
+========================= */
+
+.course-list {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 12px;
+}
+
+.course-item {
+    border: 1px solid #e5e0d5;
+
+    border-radius: 7px;
+
+    padding: 18px;
+
+    background: white;
+
+    transition: .15s;
+}
+
+.course-item:hover {
+    border-color: #d9ae45;
+
+    box-shadow:
+        0 3px 12px rgba(0,0,0,.05);
+}
+
+.course-main {
+    display: flex;
+
+    justify-content: space-between;
+
+    gap: 20px;
+}
+
+.course-info {
+    flex: 1;
+}
+
+.course-name-row {
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    flex-wrap: wrap;
+}
+
+.course-name {
+    font-size: 16px;
+
+    font-weight: bold;
+
+    color: #594b2d;
+}
+
+.course-code {
+    font-size: 10px;
+
+    color: #8b7c61;
+
+    background: #f5ecd7;
+
+    padding: 4px 7px;
+
+    border-radius: 4px;
+}
+
+.course-category {
+    font-size: 10px;
+
+    color: #777;
+
+    background: #f5f5f5;
+
+    padding: 4px 7px;
+
+    border-radius: 4px;
+}
+
+.course-description {
+    margin-top: 8px;
+
+    color: #888;
+
+    font-size: 11px;
+
+    line-height: 1.6;
+}
+
+.course-meta {
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, 1fr);
+
+    gap: 10px;
+
+    margin-top: 15px;
+
+    padding-top: 13px;
+
+    border-top: 1px solid #eee;
+}
+
+.meta-item {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 4px;
+}
+
+.meta-label {
+    color: #aaa;
+
+    font-size: 10px;
+}
+
+.meta-value {
+    color: #555;
+
+    font-size: 12px;
+}
+
+
+/* =========================
+   ACTION
+========================= */
+
+.course-action {
+    min-width: 100px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+}
+
+
+/* =========================
+   BUTTON
+========================= */
+
+.enroll-button {
+    border: none;
+
+    background: #b58d32;
+
+    color: white;
+
+    padding: 9px 16px;
+
+    border-radius: 5px;
+
+    cursor: pointer;
+
+    font-family: inherit;
+
+    font-size: 12px;
+
+    min-width: 80px;
+}
+
+.enroll-button:hover {
+    background: #957327;
+}
+
+.enroll-button:disabled {
+    cursor: not-allowed;
+
+    opacity: .75;
+}
+
+
+/* =========================
+   退選
+========================= */
+
+.enroll-button.drop {
+    background: #b66b6b;
+}
+
+.enroll-button.drop:hover {
+    background: #974f4f;
+}
+
+.enroll-button.loading {
+    opacity: .65;
+    cursor: wait;
+}
+
+
+/* =========================
+   EMPTY
+========================= */
+
+.empty {
+    padding: 45px 20px;
+
+    text-align: center;
+
+    color: #999;
+
+    font-size: 13px;
+}
+
+.empty-icon {
+    font-size: 35px;
+
+    margin-bottom: 10px;
+}
+
+
+/* =========================
+   FOOTER
+========================= */
+
+footer {
+    background: #4c4538;
+
+    color: white;
+
+    text-align: center;
+
+    padding: 30px;
+}
+
+footer h3 {
+    font-size: 17px;
+}
+
+footer p {
+    color: #d5d0c7;
+
+    font-size: 11px;
+
+    margin-top: 5px;
+}
+
+
+/* =========================
+   MOBILE
+========================= */
+
+@media(max-width:850px) {
+
+    .filter-grid {
+        grid-template-columns:
+            1fr 1fr;
+    }
+
+    .filter-group:first-child {
+        grid-column: 1 / -1;
+    }
+
+    .course-meta {
+        grid-template-columns:
+            repeat(2, 1fr);
+    }
+
+}
+
+@media(max-width:700px) {
+
+    .top-inner {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .nav-inner {
+        overflow-x: auto;
+        justify-content: flex-start;
+    }
+
+    .nav a {
+        white-space: nowrap;
+        padding: 14px 18px;
+    }
+
+    .summary-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .filter-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .filter-group:first-child {
+        grid-column: auto;
+    }
+
+    .course-main {
+        flex-direction: column;
+    }
+
+    .course-action {
+        justify-content: flex-start;
+    }
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<header class="top">
+
+<div class="top-inner">
+
+    <div class="brand">
+
+        <div class="logo">
+            CP
+        </div>
+
+        <div>
+
+            <div class="brand-title">
+                校園資訊服務平台
+            </div>
+
+            <div class="brand-subtitle">
+                CAMPUS INFORMATION PORTAL
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="header-right">
+
+        <span
+            id="headerUser"
+            class="header-user">
+
+            載入中...
+
+        </span>
+
+        <button
+            class="logout"
+            onclick="logout()">
+
+            登出
+
+        </button>
+
+    </div>
+
+</div>
+
+</header>
+
+
+<nav class="nav">
+
+<div class="nav-inner">
+
+    <a href="index.html">
+        首頁
+    </a>
+
+    <a href="courses.html">
+        我的選修
+    </a>
+
+    <a
+        href="enrollment.html"
+        class="active">
+
+        網路選課
+
+    </a>
+
+    <a href="grades.html">
+        成績查詢
+    </a>
+
+    <a href="profile.html">
+        個人資訊
+    </a>
+
+</div>
+
+</nav>
+
+
+<main class="container">
+
+
+<h1 class="title">
+    網路選課
+</h1>
+
+
+<!-- =========================
+     SUMMARY
+========================= -->
+
+<div class="summary-grid">
+
+    <div class="summary-card">
+
+        <div
+            id="totalCourseCount"
+            class="summary-number">
+
+            0
+
+        </div>
+
+        <div class="summary-label">
+            目前開放課程
+        </div>
+
+    </div>
+
+
+    <div class="summary-card">
+
+        <div
+            id="selectedCourseCount"
+            class="summary-number">
+
+            0
+
+        </div>
+
+        <div class="summary-label">
+            我的已選課程
+        </div>
+
+    </div>
+
+
+    <div class="summary-card">
+
+        <div
+            id="selectedCreditCount"
+            class="summary-number">
+
+            0
+
+        </div>
+
+        <div class="summary-label">
+            已選學分
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================
+     COURSE
+========================= -->
+
+<div class="card">
+
+
+<h2 class="card-title">
+    開放課程
+</h2>
+
+
+<!-- FILTER -->
+
+<div class="filter-area">
+
+<div class="filter-grid">
+
+
+    <div class="filter-group">
+
+        <label class="filter-label">
+            搜尋課程
+        </label>
+
+        <input
+            id="searchInput"
+            class="filter-input"
+            type="text"
+            placeholder="輸入課程名稱、課號或教師">
+
+    </div>
+
+
+    <div class="filter-group">
+
+        <label class="filter-label">
+            課程類別
+        </label>
+
+        <select
+            id="categoryFilter"
+            class="filter-select">
+
+            <option value="">
+                全部類別
+            </option>
+
+            <option value="必修">
+                必修
+            </option>
+
+            <option value="專業">
+                專業
+            </option>
+
+            <option value="資安">
+                資訊安全
+            </option>
+
+            <option value="AI">
+                人工智慧
+            </option>
+
+            <option value="網路">
+                網路
+            </option>
+
+            <option value="通識">
+                通識
+            </option>
+
+        </select>
+
+    </div>
+
+
+    <div class="filter-group">
+
+        <label class="filter-label">
+            學分
+        </label>
+
+        <select
+            id="creditFilter"
+            class="filter-select">
+
+            <option value="">
+                全部
+            </option>
+
+            <option value="2">
+                2 學分
+            </option>
+
+            <option value="3">
+                3 學分
+            </option>
+
+        </select>
+
+    </div>
+
+
+    <div class="filter-group">
+
+        <label class="filter-label">
+            星期
+        </label>
+
+        <select
+            id="dayFilter"
+            class="filter-select">
+
+            <option value="">
+                全部
+            </option>
+
+            <option value="1">
+                星期一
+            </option>
+
+            <option value="2">
+                星期二
+            </option>
+
+            <option value="3">
+                星期三
+            </option>
+
+            <option value="4">
+                星期四
+            </option>
+
+            <option value="5">
+                星期五
+            </option>
+
+        </select>
+
+    </div>
+
+
+    <button
+        id="clearFilterButton"
+        class="clear-button">
+
+        清除
+
+    </button>
+
+
+</div>
+
+</div>
+
+
+<div class="course-toolbar">
+
+    <div>
+
+        <div
+            id="courseResult"
+            class="course-result">
+
+            目前顯示 0 門課程
+
+        </div>
+
+        <div class="demo-note">
+
+            ※ 課程與選課紀錄皆由資料庫即時載入
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<div
+    id="courseList"
+    class="course-list">
+
+</div>
+
+
+</div>
+
+
+</main>
+
+
+<footer>
+
+<h3>
+    Campus Portal
+</h3>
+
+<p>
+    校園資訊服務平台
+</p>
+
+</footer>
+
+
+<script src="api.js"></script>
+
+<script>
+
+/* =========================================================
+   LOGIN
+========================================================= */
+
+const user = requireLogin();
+
+if (!user) {
+    throw new Error("未登入");
+}
+
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+document.getElementById(
+    "headerUser"
+).textContent =
+    user.name ||
+    user.student_no ||
+    "學生";
+
+
+/* =========================================================
+   DATA
+========================================================= */
+
+let allCourses = [];
+
+let myCourses = [];
+
+let enrolledIds = new Set();
+
+
+/* =========================================================
+   DAY
+========================================================= */
+
+const dayNames = {
+
+    1: "星期一",
+    2: "星期二",
+    3: "星期三",
+    4: "星期四",
+    5: "星期五"
+
+};
+
+
+/* =========================================================
+   ESCAPE HTML
+========================================================= */
+
+function escapeHTML(value) {
+
+    return String(value ?? "")
+
+        .replace(/&/g, "&amp;")
+
+        .replace(/</g, "&lt;")
+
+        .replace(/>/g, "&gt;")
+
+        .replace(/"/g, "&quot;")
+
+        .replace(/'/g, "&#039;");
+
+}
+
+
+/* =========================================================
+   LOGOUT
+========================================================= */
+
+function logout() {
+
+    localStorage.removeItem(
+        "loginUser"
+    );
+
+    window.location.href =
+        "login.html";
+
+}
+
+
+/* =========================================================
+   CATEGORY
+========================================================= */
+
+function getCategory(course) {
+
+    const code =
+        String(
+            course.course_code || ""
+        ).toUpperCase();
+
+    const name =
+        String(
+            course.name || ""
+        );
+
+
+    if (
+        code.startsWith("GE")
+    ) {
+        return "通識";
+    }
+
+
+    if (
+        name.includes("安全") ||
+        name.includes("資安")
+    ) {
+        return "資安";
+    }
+
+
+    if (
+        name.includes("人工智慧") ||
+        name.includes("機器學習")
+    ) {
+        return "AI";
+    }
+
+
+    if (
+        name.includes("網路")
+    ) {
+        return "網路";
+    }
+
+
+    return "專業";
+
+}
+
+
+/* =========================================================
+   DESCRIPTION
+========================================================= */
+
+function getDescription(course) {
+
+    if (course.description) {
+        return course.description;
+    }
+
+    return (
+        (course.name || "本課程") +
+        "｜" +
+        (course.teacher || "教師未設定") +
+        "授課"
+    );
+
+}
+
+
+/* =========================================================
+   TIME
+========================================================= */
+
+function formatTime(value) {
+
+    if (!value) {
+        return "";
+    }
+
+    return String(value).substring(0, 5);
+
+}
+
+
+/* =========================================================
+   SCHEDULE
+========================================================= */
+
+function formatSchedule(course) {
+
+    // normalizeCourse() 已將 DB 的 day_of_week
+    // 統一存成 weekday，所以這裡要使用 course.weekday。
+    const day =
+        dayNames[
+            Number(
+                course.weekday
+            )
+        ] || "時間未設定";
+
+
+    const start =
+        formatTime(
+            course.start_time
+        );
+
+
+    const end =
+        formatTime(
+            course.end_time
+        );
+
+
+    if (!start && !end) {
+        return day;
+    }
+
+
+    return (
+        day +
+        " " +
+        start +
+        (
+            end
+                ? " - " + end
+                : ""
+        )
+    );
+
+}
+
+
+/* =========================================================
+   NORMALIZE
+========================================================= */
+
+function normalizeCourse(course) {
+
+    return {
+
+        id: Number(course.id),
+
+        name:
+            course.name || "",
+
+        code:
+            course.course_code || "",
+
+        category:
+            getCategory(course),
+
+        teacher:
+            course.teacher || "",
+
+        credits:
+            Number(
+                course.credits || 0
+            ),
+
+        description:
+            getDescription(course),
+
+        weekday:
+            Number(
+                course.day_of_week || 0
+            ),
+
+        start_time:
+            course.start_time || "",
+
+        end_time:
+            course.end_time || "",
+
+        room:
+            course.classroom || "",
+
+        capacity:
+            Number(
+                course.capacity || 0
+            ),
+
+        semester:
+            course.semester || ""
+
+    };
+
+}
+
+
+/* =========================================================
+   SUMMARY
+========================================================= */
+
+function updateSummary() {
+
+    document.getElementById(
+        "totalCourseCount"
+    ).textContent =
+        allCourses.length;
+
+
+    document.getElementById(
+        "selectedCourseCount"
+    ).textContent =
+        myCourses.length;
+
+
+    const totalCredits =
+        myCourses.reduce(
+            function(sum, course) {
+
+                return (
+                    sum +
+                    Number(
+                        course.credits || 0
+                    )
+                );
+
+            },
+            0
+        );
+
+
+    document.getElementById(
+        "selectedCreditCount"
+    ).textContent =
+        totalCredits;
+
+}
+
+
+/* =========================================================
+   FILTER
+========================================================= */
+
+function getFilteredCourses() {
+
+    const keyword =
+        document.getElementById(
+            "searchInput"
+        )
+        .value
+        .trim()
+        .toLowerCase();
+
+
+    const category =
+        document.getElementById(
+            "categoryFilter"
+        ).value;
+
+
+    const credit =
+        document.getElementById(
+            "creditFilter"
+        ).value;
+
+
+    const day =
+        document.getElementById(
+            "dayFilter"
+        ).value;
+
+
+    return allCourses.filter(
+        function(course) {
+
+
+            if (keyword) {
+
+                const text = [
+
+                    course.name,
+                    course.code,
+                    course.teacher,
+                    course.description
+
+                ]
+                .join(" ")
+                .toLowerCase();
+
+
+                if (
+                    !text.includes(
+                        keyword
+                    )
+                ) {
+
+                    return false;
+
+                }
+
+            }
+
+
+            if (
+                category &&
+                course.category !==
+                    category
+            ) {
+
+                return false;
+
+            }
+
+
+            if (
+                credit &&
+                Number(course.credits) !==
+                    Number(credit)
+            ) {
+
+                return false;
+
+            }
+
+
+            if (
+                day &&
+                Number(course.weekday) !==
+                    Number(day)
+            ) {
+
+                return false;
+
+            }
+
+
+            return true;
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   RENDER COURSE
+========================================================= */
+
+function renderCourse(course) {
+
+    /*
+     * 直接用 DB 的
+     * /student/:id/courses
+     * 判斷是否已選。
+     */
+
+    const enrolled =
+        enrolledIds.has(
+            Number(course.id)
+        );
+
+
+    return `
+
+        <div class="course-item">
+
+            <div class="course-main">
+
+
+                <div class="course-info">
+
+
+                    <div class="course-name-row">
+
+                        <span class="course-name">
+
+                            ${escapeHTML(
+                                course.name
+                            )}
+
+                        </span>
+
+
+                        <span class="course-code">
+
+                            ${escapeHTML(
+                                course.code ||
+                                "—"
+                            )}
+
+                        </span>
+
+
+                        <span class="course-category">
+
+                            ${escapeHTML(
+                                course.category
+                            )}
+
+                        </span>
+
+                    </div>
+
+
+                    <div class="course-description">
+
+                        ${escapeHTML(
+                            course.description
+                        )}
+
+                    </div>
+
+
+                    <div class="course-meta">
+
+
+                        <div class="meta-item">
+
+                            <span class="meta-label">
+                                教師
+                            </span>
+
+                            <span class="meta-value">
+
+                                ${escapeHTML(
+                                    course.teacher ||
+                                    "—"
+                                )}
+
+                            </span>
+
+                        </div>
+
+
+                        <div class="meta-item">
+
+                            <span class="meta-label">
+                                學分
+                            </span>
+
+                            <span class="meta-value">
+
+                                ${course.credits}
+
+                            </span>
+
+                        </div>
+
+
+                        <div class="meta-item">
+
+                            <span class="meta-label">
+                                上課時間
+                            </span>
+
+                            <span class="meta-value">
+
+                                ${escapeHTML(
+                                    formatSchedule(
+                                        course
+                                    )
+                                )}
+
+                            </span>
+
+                        </div>
+
+
+                        <div class="meta-item">
+
+                            <span class="meta-label">
+                                教室
+                            </span>
+
+                            <span class="meta-value">
+
+                                ${escapeHTML(
+                                    course.room ||
+                                    "—"
+                                )}
+
+                            </span>
+
+                        </div>
+
+
+                    </div>
+
+
+                </div>
+
+
+                <div class="course-action">
+
+                    ${
+                        enrolled
+
+                        ?
+
+                        `
+                            <button
+                                type="button"
+                                class="enroll-button drop"
+                                onclick="
+                                    dropCourse(
+                                        this,
+                                        ${course.id}
+                                    )
+                                "
+                            >
+
+                                退選
+
+                            </button>
+                        `
+
+                        :
+
+                        `
+                            <button
+                                type="button"
+                                class="enroll-button"
+                                onclick="
+                                    enrollCourse(
+                                        this,
+                                        ${course.id}
+                                    )
+                                "
+                            >
+
+                                加選
+
+                            </button>
+                        `
+                    }
+
+                </div>
+
+
+            </div>
+
+        </div>
+
+    `;
+
+}
+
+
+/* =========================================================
+   RENDER LIST
+========================================================= */
+
+function renderCourseList() {
+
+    const list =
+        document.getElementById(
+            "courseList"
+        );
+
+
+    const courses =
+        getFilteredCourses();
+
+
+    document.getElementById(
+        "courseResult"
+    ).textContent =
+        "目前顯示 " +
+        courses.length +
+        " 門課程";
+
+
+    if (
+        courses.length === 0
+    ) {
+
+        list.innerHTML = `
+
+            <div class="empty">
+
+                <div class="empty-icon">
+                    🔍
+                </div>
+
+                找不到符合條件的課程
+
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+
+    list.innerHTML =
+        courses
+            .map(
+                renderCourse
+            )
+            .join("");
+
+}
+
+
+/* =========================================================
+   LOAD ALL COURSES
+========================================================= */
+
+async function loadAllCourses() {
+
+    try {
+
+        const data =
+            await apiFetch(
+                "/course/list"
+            );
+
+
+        if (
+            !Array.isArray(data)
+        ) {
+
+            throw new Error(
+                "課程 API 回傳格式錯誤"
+            );
+
+        }
+
+
+        allCourses =
+            data.map(
+                normalizeCourse
+            );
+
+
+        updateSummary();
+
+        renderCourseList();
+
+
+    } catch (error) {
+
+        console.error(
+            "載入課程失敗：",
+            error
+        );
+
+
+        document.getElementById(
+            "courseList"
+        ).innerHTML = `
+
+            <div class="empty">
+
+                <div class="empty-icon">
+                    ⚠️
+                </div>
+
+                課程資料載入失敗：
+
+                ${escapeHTML(
+                    error.message
+                )}
+
+            </div>
+
+        `;
+
+    }
+
+}
+
+
+/* =========================================================
+   LOAD MY COURSES
+========================================================= */
+
+async function loadMyCourses() {
+
+    try {
+
+        const data =
+            await apiFetch(
+                `/student/${user.id}/courses`
+            );
+
+
+        myCourses =
+            Array.isArray(data)
+                ? data.map(
+                    normalizeCourse
+                )
+                : [];
+
+
+        enrolledIds =
+            new Set(
+                myCourses.map(
+                    function(course) {
+
+                        return Number(
+                            course.id
+                        );
+
+                    }
+                )
+            );
+
+
+        updateSummary();
+
+        renderCourseList();
+
+
+    } catch (error) {
+
+        console.error(
+            "載入我的選課失敗：",
+            error
+        );
+
+
+        myCourses = [];
+
+        enrolledIds =
+            new Set();
+
+
+        updateSummary();
+
+        renderCourseList();
+
+    }
+
+}
+
+
+/* =========================================================
+   ENROLL
+========================================================= */
+
+async function enrollCourse(
+    button,
+    courseId
+) {
+
+    button.disabled = true;
+
+    button.classList.add(
+        "loading"
+    );
+
+    button.textContent =
+        "加選中...";
+
+
+    try {
+
+        await apiFetch(
+            `/student/${user.id}/courses`,
+            {
+
+                method: "POST",
+
+                body:
+                    JSON.stringify({
+
+                        course_id:
+                            Number(courseId)
+
+                    })
+
+            }
+        );
+
+
+        alert(
+            "加選成功！"
+        );
+
+
+        /*
+         * 成功後重新讀 PostgreSQL。
+         */
+
+        await loadMyCourses();
+
+
+    } catch (error) {
+
+        console.error(
+            "加選失敗：",
+            error
+        );
+
+
+        const body =
+            error.body || {};
+
+
+        // ====================================================
+        // 衝堂
+        // ====================================================
+
+        if (
+            error.status === 409 &&
+            body.error === "schedule_conflict"
+        ) {
+
+            const conflict =
+                body.conflict || {};
+
+            const conflictDay =
+                dayNames[
+                    Number(conflict.day_of_week)
+                ] || "時間未設定";
+
+            const conflictStart =
+                formatTime(
+                    conflict.start_time
+                );
+
+            const conflictEnd =
+                formatTime(
+                    conflict.end_time
+                );
+
+            alert(
+                "無法加選：發生衝堂！\n\n" +
+                "已選課程：" +
+                (
+                    conflict.name ||
+                    "未知課程"
+                ) +
+                "\n課號：" +
+                (
+                    conflict.course_code ||
+                    ""
+                ) +
+                "\n上課時間：" +
+                conflictDay +
+                " " +
+                conflictStart +
+                " - " +
+                conflictEnd
+            );
+
+        }
+
+        // ====================================================
+        // 已經選過
+        // ====================================================
+
+        else if (
+            error.status === 409 &&
+            body.error === "already_enrolled"
+        ) {
+
+            alert(
+                "這門課已經加選過了。"
+            );
+
+            await loadMyCourses();
+
+        }
+
+        // ====================================================
+        // 額滿
+        // ====================================================
+
+        else if (
+            error.status === 409 &&
+            body.error === "course_full"
+        ) {
+
+            alert(
+                "這門課已額滿。"
+            );
+
+        }
+
+        // ====================================================
+        // 找不到課程
+        // ====================================================
+
+        else if (
+            body.error === "course_not_found"
+        ) {
+
+            alert(
+                "找不到這門課程。"
+            );
+
+        }
+
+        // ====================================================
+        // 找不到學生
+        // ====================================================
+
+        else if (
+            body.error === "student_not_found"
+        ) {
+
+            alert(
+                "找不到學生資料，請重新登入。"
+            );
+
+        }
+
+        // ====================================================
+        // 其他錯誤
+        // ====================================================
+
+        else {
+
+            alert(
+                "加選失敗：" +
+                (
+                    body.detail ||
+                    body.message ||
+                    error.message ||
+                    "未知錯誤"
+                )
+            );
+
+        }
+
+        button.disabled = false;
+
+        button.classList.remove(
+            "loading"
+        );
+
+        button.textContent =
+            "加選";
+
+    }
+
+}
+
+
+/* =========================================================
+   DROP
+========================================================= */
+
+async function dropCourse(
+    button,
+    courseId
+) {
+
+    const course =
+        allCourses.find(
+            function(item) {
+
+                return (
+                    Number(item.id) ===
+                    Number(courseId)
+                );
+
+            }
+        );
+
+
+    const courseName =
+        course
+            ? course.name
+            : "這門課";
+
+
+    const confirmed =
+        confirm(
+            "確定要退選「" +
+            courseName +
+            "」嗎？"
+        );
+
+
+    if (!confirmed) {
+        return;
+    }
+
+
+    button.disabled = true;
+
+    button.classList.add(
+        "loading"
+    );
+
+    button.textContent =
+        "退選中...";
+
+
+    try {
+
+        /*
+         * 真正從 DB 刪除：
+         *
+         * DELETE
+         * /api/student/:studentId/courses/:courseId
+         */
+
+        await apiFetch(
+            `/student/${user.id}/courses/${courseId}`,
+            {
+                method: "DELETE"
+            }
+        );
+
+
+        alert(
+            "退選成功！"
+        );
+
+
+        /*
+         * 重新讀 DB。
+         *
+         * 所以：
+         *
+         * 網路選課
+         * 我的選修
+         * 我的課表
+         *
+         * 都會同步。
+         */
+
+        await loadMyCourses();
+
+
+    } catch (error) {
+
+        console.error(
+            "退選失敗：",
+            error
+        );
+
+
+        const body =
+            error.body || {};
+
+
+        if (
+            error.status === 404 ||
+            body.error ===
+                "not_enrolled"
+        ) {
+
+            alert(
+                "這門課目前沒有選課紀錄。"
+            );
+
+
+            await loadMyCourses();
+
+            return;
+
+        }
+
+
+        alert(
+            "退選失敗：" +
+            (
+                error.message ||
+                "未知錯誤"
+            )
+        );
+
+
+        button.disabled = false;
+
+        button.classList.remove(
+            "loading"
+        );
+
+        button.textContent =
+            "退選";
+
+    }
+
+}
+
+
+/* =========================================================
+   FILTER EVENTS
+========================================================= */
+
+document
+    .getElementById(
+        "searchInput"
+    )
+    .addEventListener(
+        "input",
+        renderCourseList
+    );
+
+
+document
+    .getElementById(
+        "categoryFilter"
+    )
+    .addEventListener(
+        "change",
+        renderCourseList
+    );
+
+
+document
+    .getElementById(
+        "creditFilter"
+    )
+    .addEventListener(
+        "change",
+        renderCourseList
+    );
+
+
+document
+    .getElementById(
+        "dayFilter"
+    )
+    .addEventListener(
+        "change",
+        renderCourseList
+    );
+
+
+/* =========================================================
+   CLEAR FILTER
+========================================================= */
+
+document
+    .getElementById(
+        "clearFilterButton"
+    )
+    .addEventListener(
+        "click",
+        function() {
+
+            document.getElementById(
+                "searchInput"
+            ).value = "";
+
+
+            document.getElementById(
+                "categoryFilter"
+            ).value = "";
+
+
+            document.getElementById(
+                "creditFilter"
+            ).value = "";
+
+
+            document.getElementById(
+                "dayFilter"
+            ).value = "";
+
+
+            renderCourseList();
+
+        }
+    );
+
+
+/* =========================================================
+   START
+========================================================= */
+
+updateSummary();
+
+
+Promise.all([
+    loadAllCourses(),
+    loadMyCourses()
+]);
+
+</script>
+
+</body>
+
+</html>

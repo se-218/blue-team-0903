@@ -1,0 +1,1316 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0">
+
+<title>我的選修｜Campus Portal</title>
+
+
+<style>
+
+/* =========================================================
+   RESET
+   ========================================================= */
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+
+body {
+    font-family:
+        "Noto Sans TC",
+        "Microsoft JhengHei",
+        Arial,
+        sans-serif;
+
+    background: #f5f3ee;
+
+    color: #333;
+}
+
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.top {
+    background: #d9ae45;
+
+    color: white;
+
+    padding: 20px 25px;
+}
+
+
+.top-inner {
+    max-width: 1100px;
+
+    margin: auto;
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+}
+
+
+.brand {
+    display: flex;
+
+    align-items: center;
+
+    gap: 15px;
+}
+
+
+.logo {
+    width: 58px;
+    height: 58px;
+
+    border: 2px solid white;
+
+    border-radius: 50%;
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    font-weight: bold;
+
+    font-size: 20px;
+}
+
+
+.brand-title {
+    font-size: 25px;
+
+    font-weight: bold;
+}
+
+
+.brand-subtitle {
+    font-size: 12px;
+
+    margin-top: 3px;
+}
+
+
+.logout {
+    background: transparent;
+
+    border: 1px solid white;
+
+    color: white;
+
+    padding: 7px 12px;
+
+    border-radius: 5px;
+
+    cursor: pointer;
+}
+
+
+/* =========================================================
+   NAV
+   ========================================================= */
+
+.nav {
+    background: white;
+
+    border-bottom: 1px solid #ddd;
+}
+
+
+.nav-inner {
+    max-width: 1100px;
+
+    margin: auto;
+
+    display: flex;
+
+    justify-content: center;
+}
+
+
+.nav a {
+    padding: 17px 25px;
+
+    text-decoration: none;
+
+    color: #333;
+}
+
+
+.nav a:hover,
+.nav a.active {
+    background: #f3ead3;
+
+    color: #9b761f;
+
+    font-weight: bold;
+}
+
+
+/* =========================================================
+   MAIN
+   ========================================================= */
+
+.container {
+    width: min(1000px, 92%);
+
+    margin: auto;
+
+    padding-bottom: 50px;
+}
+
+
+.title {
+    text-align: center;
+
+    color: #594b2d;
+
+    font-size: 24px;
+
+    margin: 35px 0 25px;
+}
+
+
+.title::after {
+    content: "";
+
+    display: block;
+
+    width: 45px;
+
+    height: 3px;
+
+    background: #d9ae45;
+
+    margin: 10px auto;
+}
+
+
+/* =========================================================
+   CARD
+   ========================================================= */
+
+.card {
+    background: white;
+
+    border: 1px solid #e5e0d5;
+
+    border-radius: 8px;
+
+    padding: 22px;
+
+    margin-bottom: 20px;
+}
+
+
+/* =========================================================
+   課表
+   ========================================================= */
+
+.table-wrap {
+    overflow-x: auto;
+}
+
+
+.timetable {
+    min-width: 850px;
+
+    display: grid;
+
+    grid-template-columns:
+        70px repeat(5, 1fr);
+
+    border-left: 1px solid #ddd;
+
+    border-top: 1px solid #ddd;
+}
+
+
+.timetable-header {
+    min-height: 45px;
+
+    border-right: 1px solid #ddd;
+
+    border-bottom: 1px solid #ddd;
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    background: #f4ead2;
+
+    color: #705c2d;
+
+    font-weight: bold;
+
+    font-size: 13px;
+}
+
+
+.timetable-time {
+    min-height: 65px;
+
+    border-right: 1px solid #ddd;
+
+    border-bottom: 1px solid #ddd;
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    background: #fafafa;
+
+    color: #888;
+
+    font-size: 11px;
+}
+
+
+.timetable-cell {
+    min-height: 65px;
+
+    border-right: 1px solid #ddd;
+
+    border-bottom: 1px solid #ddd;
+
+    padding: 4px;
+
+    background: #fff;
+}
+
+
+.course-block {
+    height: 100%;
+
+    min-height: 56px;
+
+    background: #eee4c9;
+
+    border-left: 4px solid #b58d32;
+
+    border-radius: 5px;
+
+    padding: 7px;
+
+    color: #594b2d;
+}
+
+
+.course-block strong {
+    display: block;
+
+    font-size: 12px;
+
+    margin-bottom: 3px;
+}
+
+
+.course-block span {
+    display: block;
+
+    font-size: 10px;
+
+    color: #776b52;
+
+    margin-top: 2px;
+}
+
+
+.course-block .course-code {
+    font-weight: bold;
+
+    color: #9b761f;
+}
+
+
+.schedule-loading,
+.schedule-empty,
+.schedule-error {
+    padding: 25px;
+
+    text-align: center;
+
+    color: #999;
+
+    font-size: 13px;
+}
+
+
+/* =========================================================
+   修課列表
+   ========================================================= */
+
+table {
+    width: 100%;
+
+    border-collapse: collapse;
+}
+
+
+th {
+    background: #f5f1e8;
+
+    color: #705c2d;
+
+    text-align: left;
+
+    padding: 13px;
+
+    font-size: 12px;
+}
+
+
+td {
+    padding: 14px 13px;
+
+    border-bottom: 1px solid #eee;
+
+    font-size: 13px;
+}
+
+
+.course-code {
+    color: #9b761f;
+
+    font-size: 11px;
+
+    margin-right: 5px;
+
+    font-weight: bold;
+}
+
+
+.loading,
+.empty,
+.error {
+    text-align: center;
+
+    color: #999;
+
+    padding: 25px;
+}
+
+
+/* =========================================================
+   FOOTER
+   ========================================================= */
+
+footer {
+    background: #4c4538;
+
+    color: white;
+
+    text-align: center;
+
+    padding: 30px;
+}
+
+
+footer p {
+    color: #d5d0c7;
+
+    font-size: 11px;
+
+    margin-top: 5px;
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media(max-width:700px) {
+
+    .top-inner {
+        flex-direction: column;
+
+        gap: 15px;
+    }
+
+
+    .nav-inner {
+        overflow-x: auto;
+
+        justify-content: flex-start;
+    }
+
+
+    .nav a {
+        white-space: nowrap;
+
+        padding: 14px 18px;
+    }
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<!-- =========================================================
+     HEADER
+     ========================================================= -->
+
+<header class="top">
+
+    <div class="top-inner">
+
+        <div class="brand">
+
+            <div class="logo">
+                CP
+            </div>
+
+            <div>
+
+                <div class="brand-title">
+                    校園資訊服務平台
+                </div>
+
+                <div class="brand-subtitle">
+                    CAMPUS INFORMATION PORTAL
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <button
+            class="logout"
+            onclick="logout()"
+        >
+            登出
+        </button>
+
+    </div>
+
+</header>
+
+
+<!-- =========================================================
+     NAV
+     ========================================================= -->
+
+<nav class="nav">
+
+    <div class="nav-inner">
+
+        <a href="index.html">
+            首頁
+        </a>
+
+
+        <a
+            href="courses.html"
+            class="active"
+        >
+            我的選修
+        </a>
+
+
+        <a href="enrollment.html">
+            網路選課
+        </a>
+
+
+        <a href="grades.html">
+            成績查詢
+        </a>
+
+
+        <a href="profile.html">
+            個人資訊
+        </a>
+
+    </div>
+
+</nav>
+
+
+<!-- =========================================================
+     MAIN
+     ========================================================= -->
+
+<main class="container">
+
+
+    <h1 class="title">
+        我的選修
+    </h1>
+
+
+    <!-- =====================================================
+         課表
+         ===================================================== -->
+
+    <div class="card">
+
+        <h2
+            style="
+                color:#594b2d;
+                margin-bottom:18px;
+            "
+        >
+            課表
+        </h2>
+
+
+        <div class="table-wrap">
+
+            <div
+                id="timetable"
+                class="timetable"
+            >
+
+                <div class="timetable-header">
+                    時間
+                </div>
+
+                <div class="timetable-header">
+                    星期一
+                </div>
+
+                <div class="timetable-header">
+                    星期二
+                </div>
+
+                <div class="timetable-header">
+                    星期三
+                </div>
+
+                <div class="timetable-header">
+                    星期四
+                </div>
+
+                <div class="timetable-header">
+                    星期五
+                </div>
+
+
+                <div
+                    id="scheduleBody"
+                    style="
+                        display:contents;
+                    "
+                ></div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         我的選修
+         ===================================================== -->
+
+    <div class="card">
+
+        <h2
+            style="
+                color:#594b2d;
+                margin-bottom:18px;
+            "
+        >
+            我的選修
+        </h2>
+
+
+        <table>
+
+            <thead>
+
+                <tr>
+
+                    <th>
+                        課程
+                    </th>
+
+                    <th>
+                        教師
+                    </th>
+
+                    <th>
+                        學分
+                    </th>
+
+                    <th>
+                        學期
+                    </th>
+
+                    <th>
+                        上課時間
+                    </th>
+
+                    <th>
+                        教室
+                    </th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody id="courseListBody">
+
+                <tr>
+
+                    <td
+                        colspan="6"
+                        class="loading"
+                    >
+                        載入中...
+                    </td>
+
+                </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+
+</main>
+
+
+<!-- =========================================================
+     FOOTER
+     ========================================================= -->
+
+<footer>
+
+    <h3>
+        Campus Portal
+    </h3>
+
+    <p>
+        校園資訊服務平台
+    </p>
+
+</footer>
+
+
+<script src="api.js"></script>
+
+
+<script>
+
+/* =========================================================
+   登入
+   ========================================================= */
+
+const user = requireLogin();
+
+
+/* =========================================================
+   星期
+   ========================================================= */
+
+const DAY_NAMES = {
+    1: "星期一",
+    2: "星期二",
+    3: "星期三",
+    4: "星期四",
+    5: "星期五"
+};
+
+
+/* =========================================================
+   HTML Escape
+   ========================================================= */
+
+function escapeHTML(value) {
+
+    return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+
+}
+
+
+/* =========================================================
+   時間格式
+   ========================================================= */
+
+function formatTime(value) {
+
+    if (!value) {
+        return "";
+    }
+
+    return String(value).slice(0, 5);
+
+}
+
+
+/* =========================================================
+   取得目前學生的選修
+   ========================================================= */
+
+async function getMyCourses() {
+
+    const courses =
+        await apiFetch(
+            `/student/${user.id}/courses`
+        );
+
+
+    if (!Array.isArray(courses)) {
+
+        throw new Error(
+            "API 回傳格式錯誤"
+        );
+
+    }
+
+
+    return courses;
+
+}
+
+
+/* =========================================================
+   顯示我的選修
+   ========================================================= */
+
+function renderMyCourses(courses) {
+
+    const tbody =
+        document.getElementById(
+            "courseListBody"
+        );
+
+
+    if (courses.length === 0) {
+
+        tbody.innerHTML = `
+            <tr>
+                <td
+                    colspan="6"
+                    class="empty"
+                >
+                    目前沒有選修紀錄
+                </td>
+            </tr>
+        `;
+
+        return;
+
+    }
+
+
+    tbody.innerHTML =
+        courses.map(function(course) {
+
+            const code =
+                course.course_code
+                    ? `
+                        <span class="course-code">
+                            ${escapeHTML(
+                                course.course_code
+                            )}
+                        </span>
+                    `
+                    : "";
+
+
+            const time =
+                course.start_time &&
+                course.end_time
+                    ? `
+                        ${formatTime(
+                            course.start_time
+                        )}
+                        -
+                        ${formatTime(
+                            course.end_time
+                        )}
+                    `
+                    : "—";
+
+
+            return `
+                <tr>
+
+                    <td>
+                        ${code}
+                        ${escapeHTML(
+                            course.name
+                        )}
+                    </td>
+
+
+                    <td>
+                        ${escapeHTML(
+                            course.teacher ||
+                            "—"
+                        )}
+                    </td>
+
+
+                    <td>
+                        ${escapeHTML(
+                            course.credits ??
+                            "—"
+                        )}
+                    </td>
+
+
+                    <td>
+                        ${escapeHTML(
+                            course.semester ||
+                            "—"
+                        )}
+                    </td>
+
+
+                    <td>
+                        ${
+                            course.day_of_week
+                                ? escapeHTML(
+                                    DAY_NAMES[
+                                        Number(
+                                            course.day_of_week
+                                        )
+                                    ] || "—"
+                                )
+                                : "—"
+                        }
+
+                        ${
+                            course.start_time &&
+                            course.end_time
+                                ? `
+                                    <br>
+                                    ${formatTime(
+                                        course.start_time
+                                    )}
+                                    -
+                                    ${formatTime(
+                                        course.end_time
+                                    )}
+                                `
+                                : ""
+                        }
+                    </td>
+
+
+                    <td>
+                        ${escapeHTML(
+                            course.classroom ||
+                            "—"
+                        )}
+                    </td>
+
+                </tr>
+            `;
+
+        }).join("");
+
+}
+
+
+/* =========================================================
+   建立課表
+   ========================================================= */
+
+function renderTimetable(courses) {
+
+    const scheduleBody =
+        document.getElementById(
+            "scheduleBody"
+        );
+
+
+    scheduleBody.innerHTML = "";
+
+
+    /*
+     * 目前課表顯示：
+     *
+     * 08:00
+     * 09:00
+     * 10:00
+     * 11:00
+     * 12:00
+     * 13:00
+     * 14:00
+     * 15:00
+     * 16:00
+     * 17:00
+     *
+     */
+
+    const startHour = 8;
+    const endHour = 17;
+
+
+    /*
+     * 每一個小時一列
+     */
+
+    for (
+        let hour = startHour;
+        hour <= endHour;
+        hour++
+    ) {
+
+        /*
+         * 時間欄
+         */
+
+        const time =
+            document.createElement("div");
+
+        time.className =
+            "timetable-time";
+
+        time.textContent =
+            `${String(hour).padStart(2, "0")}:00`;
+
+        scheduleBody.appendChild(time);
+
+
+        /*
+         * 星期一～星期五
+         */
+
+        for (
+            let day = 1;
+            day <= 5;
+            day++
+        ) {
+
+            const cell =
+                document.createElement("div");
+
+            cell.className =
+                "timetable-cell";
+
+
+            /*
+             * 找出這一小時有沒有課
+             */
+
+            const matched =
+                courses.filter(
+                    function(course) {
+
+                        if (
+                            Number(
+                                course.day_of_week
+                            ) !== day
+                        ) {
+
+                            return false;
+
+                        }
+
+
+                        if (
+                            !course.start_time ||
+                            !course.end_time
+                        ) {
+
+                            return false;
+
+                        }
+
+
+                        const start =
+                            parseInt(
+                                String(
+                                    course.start_time
+                                ).slice(0, 2),
+                                10
+                            );
+
+
+                        const end =
+                            parseInt(
+                                String(
+                                    course.end_time
+                                ).slice(0, 2),
+                                10
+                            );
+
+
+                        return (
+                            hour >= start &&
+                            hour < end
+                        );
+
+                    }
+                );
+
+
+            matched.forEach(
+                function(course) {
+
+                    const block =
+                        document.createElement(
+                            "div"
+                        );
+
+
+                    block.className =
+                        "course-block";
+
+
+                    const code =
+                        course.course_code ||
+                        "";
+
+
+                    const name =
+                        course.name ||
+                        "";
+
+
+                    const teacher =
+                        course.teacher ||
+                        "";
+
+
+                    const room =
+                        course.classroom ||
+                        "";
+
+
+                    const start =
+                        formatTime(
+                            course.start_time
+                        );
+
+
+                    const end =
+                        formatTime(
+                            course.end_time
+                        );
+
+
+                    block.innerHTML = `
+
+                        <strong>
+                            ${escapeHTML(
+                                name
+                            )}
+                        </strong>
+
+                        ${
+                            code
+                                ? `
+                                    <span class="course-code">
+                                        ${escapeHTML(
+                                            code
+                                        )}
+                                    </span>
+                                `
+                                : ""
+                        }
+
+                        <span>
+                            ${escapeHTML(
+                                teacher
+                            )}
+                        </span>
+
+                        <span>
+                            ${escapeHTML(
+                                start
+                            )}
+                            -
+                            ${escapeHTML(
+                                end
+                            )}
+                        </span>
+
+                        <span>
+                            ${escapeHTML(
+                                room
+                            )}
+                        </span>
+
+                    `;
+
+
+                    cell.appendChild(
+                        block
+                    );
+
+                }
+            );
+
+
+            scheduleBody.appendChild(
+                cell
+            );
+
+        }
+
+    }
+
+}
+
+
+/* =========================================================
+   載入資料
+   ========================================================= */
+
+async function loadCourses() {
+
+    const tbody =
+        document.getElementById(
+            "courseListBody"
+        );
+
+
+    const scheduleBody =
+        document.getElementById(
+            "scheduleBody"
+        );
+
+
+    try {
+
+        /*
+         * 同一個 API：
+         *
+         * /api/student/:id/courses
+         *
+         * 同時供：
+         *
+         * 1. 我的選修
+         * 2. 我的課表
+         *
+         * 使用。
+         */
+
+        const courses =
+            await getMyCourses();
+
+
+        /*
+         * 我的選修
+         */
+
+        renderMyCourses(
+            courses
+        );
+
+
+        /*
+         * 我的課表
+         */
+
+        renderTimetable(
+            courses
+        );
+
+
+    } catch (err) {
+
+        console.error(
+            "載入我的選修失敗：",
+            err
+        );
+
+
+        tbody.innerHTML = `
+            <tr>
+                <td
+                    colspan="6"
+                    class="error"
+                >
+                    載入失敗：
+                    ${escapeHTML(
+                        err.message ||
+                        "未知錯誤"
+                    )}
+                </td>
+            </tr>
+        `;
+
+
+        scheduleBody.innerHTML = `
+
+            <div
+                style="
+                    grid-column:1 / -1;
+                    padding:30px;
+                    text-align:center;
+                    color:#999;
+                "
+            >
+                課表載入失敗：
+                ${escapeHTML(
+                    err.message ||
+                    "未知錯誤"
+                )}
+            </div>
+
+        `;
+
+    }
+
+}
+
+
+/* =========================================================
+   登出
+   ========================================================= */
+
+function logout() {
+
+    localStorage.removeItem(
+        "loginUser"
+    );
+
+    window.location.href =
+        "login.html";
+
+}
+
+
+/* =========================================================
+   START
+   ========================================================= */
+
+loadCourses();
+
+</script>
+
+
+</body>
+
+</html>
