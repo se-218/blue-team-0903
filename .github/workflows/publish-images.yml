@@ -1,0 +1,169 @@
+# 打 tag 就 build 兩個靶機 image、跑冒煙測試、推 GHCR。
+#
+# 為什麼要有這支：image 是手動 build 手動 push 的時候，「原始碼是對的」與「發佈中的
+# image 是對的」是兩件沒有任何東西在同步的事。實際發生過 —— 主 repo 的
+# deploy/compose.blue.yml 釘著 1.0.0（seed 寫死 IP 的舊版），而 1.0.2 早就修好發佈了，
+# 從外面完全看不出來，關卡 4 的橫向移動在那個組合下是斷的。
+#
+# 版本號從 git tag 來，所以「哪一版是現在的」有單一答案：最新的 tag。
+#
+# 用法：
+#   git tag v1.0.3 && git push origin v1.0.3
+#
+# 刻意不推 latest —— 交付契約要求正式部署釘死版本（README「交付契約」那節），
+# 有一個會浮動的 tag 存在，遲早有人拿它去部署。
+name: publish images
+
+# 刻意只有 tag push 這一個觸發條件。手動觸發要嘛得再輸入一次版本號（那個輸入跟實際
+# checkout 的 ref 沒有任何關係，從分支就能推出一個對應不到任何 tag 的 image，
+# 「git tag 是唯一出處」當場失效），要嘛得自己驗 tag 存不存在再 checkout ——
+# 而那件事 tag push 本來就免費做到了。發佈失敗要重跑，用 GitHub 的 re-run
+# （它會用同一個 ref），不要另開一條旁路。
+on:
+  push:
+    tags: ["v*"]
+
+env:
+  REGISTRY: ghcr.io
+  # 組織底下而不是個人 —— 交付物要在人離開之後還在。
+  NAMESPACE: se-218
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 決定版本號
+        id: ver
+        run: |
+          # GITHUB_REF_NAME 是 runner 給的環境變數，不是樣板展開 —— 不會在 shell
+          # 解析前被插進來，所以不需要另外接一層 env 才安全。
+          version="${GITHUB_REF_NAME#v}"
+          # 擋掉手滑：版本號會變成 image tag，格式不對的話後面推上去很難收回
+          echo "$version" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$' \
+            || { echo "tag 格式不對：$GITHUB_REF_NAME（要 vX.Y.Z）"; exit 1; }
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "要發佈的版本：$version"
+
+      - name: Build
+        run: |
+          docker build -t target-box:ci      ./target-box
+          docker build -t target-internal:ci ./target-internal
+
+      # 冒煙測試整段跑在 --internal 網路上：容器連不到外網。
+      # 這同時驗了交付契約第 6 條「容器內不得需要出網」—— 啟動時要 pull 或裝東西的
+      # image 在正式環境（全程 DENY 出網）會卡在等待迴圈裡永遠起不來。
+      - name: 起一套 lab（禁止出網）
+        run: |
+          docker network create --internal labnet
+          docker run -d --name blue-b --network labnet --network-alias target-internal \
+            -e LAB_ID=ci target-internal:ci
+          docker run -d --name blue-a --network labnet -e LAB_ID=ci target-box:ci
+          for _ in $(seq 1 60); do
+            docker exec blue-a mysqladmin ping --silent 2>/dev/null && break
+            sleep 3
+          done
+          docker exec blue-a mysqladmin ping --silent \
+            || { docker logs blue-a; echo "靶機起不來"; exit 1; }
+
+      - name: 驗七個關卡都布下去了
+        run: |
+          fail() { echo "::error::$1"; exit 1; }
+          q() { docker exec blue-a bash -c "$1"; }
+
+          # 關卡 1：.env 要是鬆的（777），不然沒題目
+          [ "$(q "stat -c %a /opt/portal/.env")" = 777 ] || fail "關卡1：.env 權限不是 777"
+          # 關卡 2
+          [ "$(q "stat -c %a /etc/shadow")" = 644 ] || fail "關卡2：/etc/shadow 權限不是 644"
+          # 關卡 3
+          q "sudo -l -U user1" | grep -qi "NOPASSWD.*vim" || fail "關卡3：user1 沒有 NOPASSWD vim"
+          # 關卡 5
+          [ "$(q "stat -c %a /opt/scripts/system_backup.sh")" = 777 ] || fail "關卡5：backup 腳本不是 777"
+          # 關卡 6：預埋的攻擊軌跡要在，體驗組（沒有紅隊）才驗得出這關
+          n=$(q "grep -c backdoor.php /var/log/nginx/access_json.log || true")
+          [ "${n:-0}" -gt 0 ] || fail "關卡6：access log 裡沒有預埋的 webshell 軌跡"
+          # 關卡 7：honeypot 假 daemon 要活著，不然 checker 會判 pending、這關等於沒題目
+          q "test -S /var/run/dind/docker.sock" || fail "關卡7：honeypot socket 不存在"
+          q "timeout 5 docker -H unix:///var/run/dind/docker.sock version >/dev/null" \
+            || fail "關卡7：honeypot socket 在但 daemon 不回應"
+          echo "七關都在"
+
+      # 這一條是這支 workflow 存在的直接理由：1.0.0 就是這裡出的錯。
+      - name: 驗關卡 4 的橫向移動整條路徑
+        run: |
+          fail() { echo "::error::$1"; exit 1; }
+          host=$(docker exec blue-a mysql --default-character-set=utf8mb4 \
+                   -ugrader -pgrader_ro_9f3a2b -N \
+                   -e "SELECT host FROM campus_db.internal_hosts;" 2>/dev/null | tr -d '\r')
+          [ "$host" = target-internal ] \
+            || fail "seed 的 host 是 '$host'，不是主機名 target-internal —— 寫死 IP 在正式部署解析不到"
+          docker exec blue-a bash -c "getent hosts target-internal" \
+            || fail "target-internal 解析不到"
+          docker exec blue-a bash -c "timeout 5 bash -c '</dev/tcp/target-internal/22'" \
+            || fail "連不到 target-internal 的 SSH"
+          docker exec blue-b sh -c "test -f /opt/registrar/flag06.txt" \
+            || fail "橫向移動的目標檔不在"
+          echo "橫向移動整條通"
+
+      - name: 驗交付契約
+        run: |
+          fail() { echo "::error::$1"; exit 1; }
+          for c in blue-a blue-b; do
+            # 契約 5：容器內不得跑 ttyd 或任何平台元件（ttyd 在 VM 宿主上，
+            # 容器裡再跑一份的話來賓拿到 root 就能殺掉自己的終端機）
+            docker exec "$c" sh -c "command -v ttyd" >/dev/null 2>&1 \
+              && fail "$c 裡面有 ttyd"
+            # 契約 2：要有 shell
+            docker exec "$c" sh -c "exit 0" || fail "$c 沒有可用的 shell"
+            # 契約 3：吃得到 LAB_ID
+            [ "$(docker exec "$c" sh -c 'echo $LAB_ID')" = ci ] || fail "$c 讀不到 LAB_ID"
+          done
+          echo "契約 2／3／5／6 通過"
+
+      - name: 收掉測試環境
+        if: always()
+        run: |
+          docker rm -f blue-a blue-b 2>/dev/null || true
+          docker network rm labnet 2>/dev/null || true
+
+      - name: 登入 GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 推 image
+        run: |
+          v="${{ steps.ver.outputs.version }}"
+          for name in target-box target-internal; do
+            ref="${{ env.REGISTRY }}/${{ env.NAMESPACE }}/metis-$name:$v"
+            docker tag "$name:ci" "$ref"
+            docker push "$ref"
+            echo "推上 $ref"
+          done
+
+      - name: 印出 digest 給環境端釘版本
+        run: |
+          v="${{ steps.ver.outputs.version }}"
+          {
+            echo "## 發佈 $v"
+            echo
+            echo '交付契約建議用 digest 釘死，不要只靠 tag：'
+            echo
+            echo '```'
+            for name in target-box target-internal; do
+              repo="${{ env.REGISTRY }}/${{ env.NAMESPACE }}/metis-$name"
+              # 一個 image ID 可以掛著多個 RepoDigests（同一份內容推去不同 registry），
+              # 取 index 0 拿到的未必是剛推的這個 —— 而 digest 正是環境端要釘的東西，
+              # 印錯比不印更糟。按 repo 名字挑。
+              docker inspect --format='{{range .RepoDigests}}{{println .}}{{end}}' "$repo:$v" \
+                | grep "^${repo}@" || echo "$repo:$v（拿不到 digest）"
+            done
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"

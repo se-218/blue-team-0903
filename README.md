@@ -1,8 +1,8 @@
 # blue-team-0903 — Metis 藍隊靶機 image 原始碼
 
 Metis 校務門戶攻防演練，**藍隊交付的兩個靶機 image 的 build 原始碼**。
-image 由 Docker Hub 交付、不放主 repo；主 repo [`se-218/Metis`](https://github.com/se-218/Metis)
-只保留計分引擎（`blue/scoring-engine/`）與文件。
+image 由 **GHCR** 交付（打 tag 自動發佈，見下方「發佈」）、不放主 repo；主 repo
+[`se-218/Metis`](https://github.com/se-218/Metis) 只保留計分引擎（`blue/scoring-engine/`）與文件。
 
 ## 兩個 image
 
@@ -23,16 +23,35 @@ image 由 Docker Hub 交付、不放主 repo；主 repo [`se-218/Metis`](https:/
 | 6（隱藏） | webshell 攻擊軌跡鑑識 + IP 圍堵 | 分析 log、`iptables` 封鎖 |
 | 7（隱藏） | 曝露的 docker socket（honeypot）容器逃逸 | `rm -f /var/run/dind/docker.sock` |
 
-## build + push 到 Docker Hub
+## 發佈
+
+打 tag 就好，其餘由 `.github/workflows/publish-images.yml` 做完：build → 冒煙測試 → 推 GHCR。
 
 ```bash
-docker build -t <namespace>/metis-target-box:1.0.2      target-box
-docker build -t <namespace>/metis-target-internal:1.0.0 target-internal
-docker push <namespace>/metis-target-box:1.0.2
-docker push <namespace>/metis-target-internal:1.0.0
+git tag v1.0.3 && git push origin v1.0.3
 ```
 
-目前發佈中：`allenlee564/metis-target-box:1.0.2`、`allenlee564/metis-target-internal:1.0.0`
+**版本號的唯一出處是 git tag。** 手動 build 手動 push 的時候，「原始碼是對的」跟
+「發佈中的 image 是對的」沒有任何東西在同步 —— 實際出過事：主 repo 的
+`deploy/compose.blue.yml` 釘著 `1.0.0`（seed 寫死 IP 的舊版），而 `1.0.2` 早就修好發佈了，
+從外面看不出差別，關卡 4 的橫向移動在那個組合下是斷的。
+
+發佈前的冒煙測試會擋下這類問題，整段跑在**禁止出網**的網路上（順便驗契約第 6 條）：
+
+- 七個關卡的漏洞都還在（權限沒被 build 過程改掉、honeypot 活著、webshell 軌跡有預埋）
+- 關卡 4 整條路徑：seed 是主機名 `target-internal`（不是寫死 IP）、解析得到、SSH 通、目標檔在
+- 交付契約 2／3／5／6
+
+**刻意不推 `latest`** —— 契約要求正式部署釘死版本，有一個會浮動的 tag 存在遲早有人拿去部署。
+
+| | 位置 |
+|---|---|
+| 現行 | `ghcr.io/se-218/metis-target-box`、`ghcr.io/se-218/metis-target-internal` |
+| 舊的（勿用於新部署） | `allenlee564/metis-target-box`、`allenlee564/metis-target-internal`（Docker Hub） |
+
+> GHCR 的 package 預設 **private**，`compose.blue.yml` 是不帶認證直接 pull 的 ——
+> 第一次推完要到 Packages 頁設成 Public 並 link 到本 repo，否則環境端拉不到，
+> 而錯誤訊息長得像「image 不存在」。
 
 ## 交付契約（給環境端）
 
