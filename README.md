@@ -1,8 +1,8 @@
 # blue-team-0903 — Metis 藍隊靶機 image 原始碼
 
 Metis 校務門戶攻防演練，**藍隊交付的兩個靶機 image 的 build 原始碼**。
-image 由 Docker Hub 交付、不放主 repo；主 repo [`se-218/Metis`](https://github.com/se-218/Metis)
-只保留計分引擎（`blue/scoring-engine/`）與文件。
+image 由 **GHCR** 交付（打 tag 自動發佈，見下方「發佈」）、不放主 repo；主 repo
+[`se-218/Metis`](https://github.com/se-218/Metis) 只保留計分引擎（`blue/scoring-engine/`）與文件。
 
 ## 兩個 image
 

@@ -14,14 +14,14 @@
 # 有一個會浮動的 tag 存在，遲早有人拿它去部署。
 name: publish images
 
+# 刻意只有 tag push 這一個觸發條件。手動觸發要嘛得再輸入一次版本號（那個輸入跟實際
+# checkout 的 ref 沒有任何關係，從分支就能推出一個對應不到任何 tag 的 image，
+# 「git tag 是唯一出處」當場失效），要嘛得自己驗 tag 存不存在再 checkout ——
+# 而那件事 tag push 本來就免費做到了。發佈失敗要重跑，用 GitHub 的 re-run
+# （它會用同一個 ref），不要另開一條旁路。
 on:
   push:
     tags: ["v*"]
-  workflow_dispatch:
-    inputs:
-      version:
-        description: "版本號（不含 v，例如 1.0.3）"
-        required: true
 
 env:
   REGISTRY: ghcr.io
@@ -41,14 +41,12 @@ jobs:
       - name: 決定版本號
         id: ver
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            version="${{ inputs.version }}"
-          else
-            version="${GITHUB_REF_NAME#v}"
-          fi
+          # GITHUB_REF_NAME 是 runner 給的環境變數，不是樣板展開 —— 不會在 shell
+          # 解析前被插進來，所以不需要另外接一層 env 才安全。
+          version="${GITHUB_REF_NAME#v}"
           # 擋掉手滑：版本號會變成 image tag，格式不對的話後面推上去很難收回
           echo "$version" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$' \
-            || { echo "版本號格式不對：$version（要 x.y.z）"; exit 1; }
+            || { echo "tag 格式不對：$GITHUB_REF_NAME（要 vX.Y.Z）"; exit 1; }
           echo "version=$version" >> "$GITHUB_OUTPUT"
           echo "要發佈的版本：$version"
 
@@ -160,8 +158,12 @@ jobs:
             echo
             echo '```'
             for name in target-box target-internal; do
-              ref="${{ env.REGISTRY }}/${{ env.NAMESPACE }}/metis-$name:$v"
-              docker inspect --format='{{index .RepoDigests 0}}' "$ref" 2>/dev/null || echo "$ref"
+              repo="${{ env.REGISTRY }}/${{ env.NAMESPACE }}/metis-$name"
+              # 一個 image ID 可以掛著多個 RepoDigests（同一份內容推去不同 registry），
+              # 取 index 0 拿到的未必是剛推的這個 —— 而 digest 正是環境端要釘的東西，
+              # 印錯比不印更糟。按 repo 名字挑。
+              docker inspect --format='{{range .RepoDigests}}{{println .}}{{end}}' "$repo:$v" \
+                | grep "^${repo}@" || echo "$repo:$v（拿不到 digest）"
             done
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
