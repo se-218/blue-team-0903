@@ -13,6 +13,12 @@ INSERT INTO users (id, student_no, password_hash, name, department, role, phone,
 (10, 'B11123010', '$2a$06$LifH7xLlstEgV5B94IaL6eGg2z2T31EQ1xnYrAIvv9GIRHqj/zhwy', '楊同學', '運動科學系', 'student', NULL, NULL, NULL),
 (11, 'A00000001', '$2a$06$qXozzzhiGa2nOZjs5xI0Ouq.FwyBvUEhP55ZzjLRhb1OT94T1BLpq', '系統管理員', NULL, 'admin', NULL, NULL, NULL);
 
+-- issue #157: 憑證重用立足點。hash 是 bcrypt("user123")，跟 OS 帳號 user1 的
+-- SSH 密碼相同（見 Dockerfile），紅隊 SQLi dump 出這筆、離線破解後即可 SSH 進來。
+-- admin 帳號刻意不動，維持既有的 red herring 定位。
+INSERT INTO users (id, student_no, password_hash, name, department, role, phone, grade, email) VALUES
+(12, 'user1', '$2a$06$F3ew/c/XamOdjNpBiqv1U.nHyyg/Uy8ChD1TXtNi/3FcvcKI3WD1W', '系統維運帳號', '資訊中心', 'staff', NULL, NULL, NULL);
+
 INSERT INTO courses (id, name, teacher, credits, course_code, semester, day_of_week, start_time, end_time, classroom, capacity) VALUES
 (1, '資料庫概論', '王老師', 3, 'CS101', '2025-2', 1, '09:00:00', '12:00:00', 'A301', 50),
 (2, '網路安全導論', '李老師', 3, 'CS202', '2025-2', 3, '13:00:00', '16:00:00', 'B201', 50),
