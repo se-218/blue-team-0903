@@ -1,4 +1,4 @@
--- 假資料（從 mysql-import/*.csv 轉換而來，密碼統一明文為 Passw0rd!，僅供demo使用）
+-- 假資料（從 mysql-import/*.csv 轉換而來，密碼統一明文為 Passw0rd!，僅供demo使用；user1 例外為 user123）
 
 INSERT INTO users (id, student_no, password_hash, name, department, role, phone, grade, email) VALUES
 (1, 'B11123001', '$2a$06$befycFA0Gv3rsb.C0ISLHuI4CaKk5.IZCW3lby1B1lWwO6VhCxMxO', '陳同學', '資訊工程系', 'student', '1233456789', NULL, NULL),
