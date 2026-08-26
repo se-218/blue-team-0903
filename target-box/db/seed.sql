@@ -13,6 +13,11 @@ INSERT INTO users (id, student_no, password_hash, name, department, role, phone,
 (10, 'B11123010', '$2a$06$LifH7xLlstEgV5B94IaL6eGg2z2T31EQ1xnYrAIvv9GIRHqj/zhwy', '楊同學', '運動科學系', 'student', NULL, NULL, NULL),
 (11, 'A00000001', '$2a$06$qXozzzhiGa2nOZjs5xI0Ouq.FwyBvUEhP55ZzjLRhb1OT94T1BLpq', '系統管理員', NULL, 'admin', NULL, NULL, NULL);
 
+-- 憑證重用：DB 帳號 user1 的密碼 = OS 帳號 user1 的 SSH 密碼（user123）。
+-- 供紅隊 SQLi 撈到後 ssh user1@blue-a（見 se-218/Metis#157）。
+INSERT INTO users (student_no, password_hash, name, department, role)
+VALUES ('user1', '$2a$06$F3ew/c/XamOdjNpBiqv1U.nHyyg/Uy8ChD1TXtNi/3FcvcKI3WD1W', '系統維運帳號', '資訊中心', 'staff');
+
 INSERT INTO courses (id, name, teacher, credits, course_code, semester, day_of_week, start_time, end_time, classroom, capacity) VALUES
 (1, '資料庫概論', '王老師', 3, 'CS101', '2025-2', 1, '09:00:00', '12:00:00', 'A301', 50),
 (2, '網路安全導論', '李老師', 3, 'CS202', '2025-2', 3, '13:00:00', '16:00:00', 'B201', 50),
