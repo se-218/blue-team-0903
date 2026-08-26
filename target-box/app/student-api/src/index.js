@@ -95,25 +95,16 @@ app.post("/login", async (req, res) => {
 
     try {
 
+        // ⚠️ 刻意漏洞（紅隊初始入侵點）：student_no 直接字串拼接進 SQL，未參數化。
+        //    密碼仍以 bcrypt 驗證（正常登入照常運作）；student_no 為真實可注入點
+        //    （UNION 撈資料、error-based 皆可，sqlmap 打得穿）。
+        const sql =
+            "SELECT id, student_no, name, department, phone, grade, email, role, password_hash, created_at "
+            + "FROM users "
+            + "WHERE student_no = '" + student_no + "'";
+
         const [rows] =
-            await pool.query(
-                `
-                SELECT
-                    id,
-                    student_no,
-                    name,
-                    department,
-                    phone,
-                    grade,
-                    email,
-                    role,
-                    password_hash,
-                    created_at
-                FROM users
-                WHERE student_no = ?
-                `,
-                [student_no]
-            );
+            await pool.query(sql);
 
 
         const user =
