@@ -84,9 +84,9 @@ jobs:
           q "sudo -l -U user1" | grep -qi "NOPASSWD.*vim" || fail "關卡3：user1 沒有 NOPASSWD vim"
           # 關卡 5
           [ "$(q "stat -c %a /opt/scripts/system_backup.sh")" = 777 ] || fail "關卡5：backup 腳本不是 777"
-          # 關卡 6：預埋的攻擊軌跡要在，體驗組（沒有紅隊）才驗得出這關
-          n=$(q "grep -c backdoor.php /var/log/nginx/access_json.log || true")
-          [ "${n:-0}" -gt 0 ] || fail "關卡6：access log 裡沒有預埋的 webshell 軌跡"
+          # 關卡 6：預埋的 SSH 持久化後門公鑰要在，體驗組（沒有紅隊）才驗得出這關
+          q "grep -q 'redteam@metis-persistence' /root/.ssh/authorized_keys" \
+            || fail "關卡6：/root/.ssh/authorized_keys 裡沒有預埋的攻擊者後門公鑰"
           # 關卡 7：honeypot 假 daemon 要活著，不然 checker 會判 pending、這關等於沒題目
           q "test -S /var/run/dind/docker.sock" || fail "關卡7：honeypot socket 不存在"
           q "timeout 5 docker -H unix:///var/run/dind/docker.sock version >/dev/null" \

