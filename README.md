@@ -20,7 +20,7 @@ image 由 **GHCR** 交付（打 tag 自動發佈，見下方「發佈」）、�
 | 3 | sudoers 讓 `user1` 免密碼 `sudo vim` 提權 | 移除 NOPASSWD 權限 |
 | 4 | DB 明文內網 SSH 憑證 → 橫向移動到 `target-internal` | 清 `internal_hosts` 資料表 |
 | 5 | backup 腳本 777 + root cron 每分鐘跑 | 收緊 owner/權限 |
-| 6（隱藏） | webshell 攻擊軌跡鑑識 + IP 圍堵 | 分析 log、`iptables` 封鎖 |
+| 6（隱藏） | SSH 持久化後門清除（authorized_keys 植入攻擊者公鑰） | 移除 authorized_keys 內攻擊者那把 key |
 | 7（隱藏） | 曝露的 docker socket（honeypot）容器逃逸 | `rm -f /var/run/dind/docker.sock` |
 
 ## 發佈
@@ -38,7 +38,7 @@ git tag v1.0.3 && git push origin v1.0.3
 
 發佈前的冒煙測試會擋下這類問題，整段跑在**禁止出網**的網路上（順便驗契約第 6 條）：
 
-- 七個關卡的漏洞都還在（權限沒被 build 過程改掉、honeypot 活著、webshell 軌跡有預埋）
+- 七個關卡的漏洞都還在（權限沒被 build 過程改掉、honeypot 活著、SSH 後門公鑰有預埋）
 - 關卡 4 整條路徑：seed 是主機名 `target-internal`（不是寫死 IP）、解析得到、SSH 通、目標檔在
 - 交付契約 2／3／5／6
 
