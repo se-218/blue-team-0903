@@ -14,9 +14,14 @@ jq -r '
   "===== 目前分數：\(.total_score) / \(.max_score) =====",
   "（最後檢查時間：\(.timestamp)）",
   "",
-  (.checks[] | (
-    if .status == "pass" then "✔ PASS"
-    elif .status == "fail" then "✘ FAIL"
-    else "… 尚無紀錄" end
-  ) + "  " + .label + "　" + (.score|tostring) + "/" + (.max_score|tostring) + "分")
+  (.checks[] |
+    if .status == "locked" then
+      "?  ？？？　尚未解鎖（先過完前面的正式題）"
+    else
+      (
+        if .status == "pass" then "✔ PASS"
+        elif .status == "fail" then "✘ FAIL"
+        else "… 尚無紀錄" end
+      ) + "  " + .label + "　" + (.score|tostring) + "/" + (.max_score|tostring) + "分"
+    end)
 ' "$STATUS_FILE"
