@@ -847,7 +847,9 @@ function logout() {
 
 ========================================================= */
 
-const previousSemesterCourses = [
+// 預設是離線展示資料；startup 會用 blue-b 成績庫的即時資料覆蓋它（見檔案結尾）。
+// 保留這份當 fallback：blue-b 還沒部署、或 transcript 端點回 503 時，頁面照樣有東西可看。
+let previousSemesterCourses = [
 
     {
         id: 101,
@@ -1244,9 +1246,27 @@ function loadPreviousSemesterGrades() {
 
 /* =========================================================
    啟動
+
+   先向 student-api 拿這位學生在 blue-b 成績庫裡的即時成績，成功就覆蓋掉上面那份
+   離線展示資料再渲染 —— 這樣紅隊在 blue-b 改了分數，這頁重新整理就會看到變動。
+   端點不通（blue-b 未部署、503、網路擋掉）就沿用離線資料，頁面不會空掉。
 ========================================================= */
 
-loadPreviousSemesterGrades();
+async function bootGrades() {
+    try {
+        if (user && user.id) {
+            const rows = await apiFetch("/student/" + user.id + "/transcripts");
+            if (Array.isArray(rows) && rows.length > 0) {
+                previousSemesterCourses = rows;
+            }
+        }
+    } catch (err) {
+        console.warn("即時成績讀取失敗，改用離線展示資料：", err);
+    }
+    loadPreviousSemesterGrades();
+}
+
+bootGrades();
 
 </script>
 

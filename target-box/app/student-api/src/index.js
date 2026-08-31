@@ -2,6 +2,7 @@ const express = require("express");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const pool = require("./db");
+const transcriptPool = require("./db-transcript");
 
 const app = express();
 
@@ -1072,6 +1073,108 @@ app.delete(
 
     }
 );
+
+
+// ============================================================
+// TRANSCRIPTS（歷史成績單）
+//
+// 成績單存在 blue-b（target-internal）的獨立 MySQL，只被授權從 172.29.% 連線，
+// 所以只有這台 blue-a 讀得到（見 db-transcript.js）。box2 的成績表刻意只存
+// student_id / course_id / semester / score / letter_grade / grade_point ——
+// 不重複存課程名稱／老師／學分，那些是課程主庫的事。所以這裡先向 blue-b 拿成績，
+// 再用本機 campus_db.courses 補課程中繼資料，合併後回給前端。
+//
+// 這是紅隊改成績攻擊鏈的「顯示端」：紅隊在 blue-b 改了 transcripts 的分數，
+// 來賓在校園網成績頁看到的分數就會跟著變。
+// ============================================================
+
+app.get("/:id/transcripts", authRequired, ownerOrAdmin, async (req, res) => {
+
+    if (!transcriptPool) {
+        return res.status(503).json({
+            error: "transcript_db_unavailable"
+        });
+    }
+
+    try {
+
+        const [rows] =
+            await transcriptPool.query(
+                `
+                SELECT
+                    course_id,
+                    semester,
+                    score,
+                    letter_grade,
+                    grade_point
+                FROM transcripts
+                WHERE student_id = ?
+                ORDER BY semester DESC, course_id
+                `,
+                [req.params.id]
+            );
+
+
+        if (rows.length === 0) {
+            return res.json([]);
+        }
+
+
+        // 補課程中繼資料：成績表只有 course_id，名稱／老師／學分向本機課程主庫查。
+        const courseIds =
+            [...new Set(rows.map((r) => r.course_id))];
+
+        const [courses] =
+            await pool.query(
+                `
+                SELECT id, name, teacher, credits
+                FROM courses
+                WHERE id IN (?)
+                `,
+                [courseIds]
+            );
+
+        const byId =
+            new Map(courses.map((c) => [c.id, c]));
+
+
+        const merged =
+            rows.map((r) => {
+
+                const c = byId.get(r.course_id) || {};
+
+                return {
+                    id: r.course_id,
+                    name: c.name || `課程 ${r.course_id}`,
+                    teacher: c.teacher ?? null,
+                    credits: c.credits ?? null,
+                    semester: r.semester,
+                    score: r.score,
+                    letter_grade: r.letter_grade,
+                    grade_point: r.grade_point,
+                };
+
+            });
+
+
+        res.json(merged);
+
+
+    } catch (err) {
+
+        console.error(
+            "GET /:id/transcripts failed:",
+            err
+        );
+
+
+        res.status(503).json({
+            error: "transcript_query_failed"
+        });
+
+    }
+
+});
 
 
 // ============================================================
